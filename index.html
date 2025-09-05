@@ -1,0 +1,27 @@
+# liff<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>LIFF Demo</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+</head>
+<body>
+  <h1>Hello LIFF!</h1>
+  <button onclick="sendMsg()">送訊息</button>
+  <script>
+    async function main() {
+      await liff.init({ liffId: "YOUR_LIFF_ID" }); // 換成你的 LIFF ID
+      if (!liff.isLoggedIn()) {
+        liff.login();
+      }
+    }
+    async function sendMsg() {
+      await liff.sendMessages([
+        { type: "text", text: "這是從 LIFF 發出的訊息 🎉" }
+      ]);
+      alert("已送出訊息！");
+    }
+    main();
+  </script>
+</body>
+</html>
