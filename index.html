@@ -1,0 +1,328 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LIFF 諮詢單（逐題）</title>
+  <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
+  <style>
+    :root{--card:#fff;--bg:#f6f7f9;--primary:#16a34a}
+    body{margin:0;background:var(--bg);font-family:system-ui,-apple-system,Segoe UI,Roboto}
+    .wrap{max-width:720px;margin:24px auto;padding:16px}
+    .card{background:var(--card);border-radius:16px;box-shadow:0 6px 24px rgba(0,0,0,.06);padding:20px}
+    .progress{height:8px;background:#e5e7eb;border-radius:999px;overflow:hidden;margin:8px 0 20px}
+    .bar{height:100%;background:var(--primary);width:0%}
+    h1{font-size:22px;margin:8px 0 16px}
+    .q{display:none}
+    .q.active{display:block}
+    .field{margin:14px 0}
+    label{display:block;margin-bottom:6px;color:#374151}
+    input[type=text],input[type=tel],input[type=email],textarea,select{
+      width:100%;padding:12px 14px;border:1px solid #e5e7eb;border-radius:12px;background:#fff;box-sizing:border-box
+    }
+    textarea{min-height:120px;resize:vertical}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    .actions{display:flex;gap:12px;justify-content:space-between;margin-top:16px}
+    button{border:0;border-radius:999px;padding:12px 18px;font-weight:600;cursor:pointer}
+    .ghost{background:#eef2ff}
+    .primary{background:var(--primary);color:white}
+    .hint{color:#6b7280;font-size:13px}
+    .chips{display:flex;gap:8px;flex-wrap:wrap}
+    .chip input{display:none}
+    .chip label{border:1px solid #e5e7eb;border-radius:999px;padding:8px 12px;cursor:pointer}
+    .chip input:checked + label{background:#dcfce7;border-color:#86efac}
+    .previews{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}
+    .previews img{width:96px;height:96px;object-fit:cover;border-radius:12px;border:1px solid #e5e7eb}
+    .error{color:#b91c1c;font-size:13px;margin-top:6px}
+    .ok{color:#065f46;font-size:14px}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>諮詢問卷</h1>
+      <div class="progress"><div class="bar" id="bar"></div></div>
+      <p class="hint" id="hello">初始化中…</p>
+
+      <!-- Q1：基本訴求 -->
+      <section class="q active" data-required="true">
+        <div class="field">
+          <label>你此刻最想改善的目標是？</label>
+          <div class="chips">
+            <div class="chip"><input type="radio" name="goal" id="g1" value="減脂"><label for="g1">減脂</label></div>
+            <div class="chip"><input type="radio" name="goal" id="g2" value="增肌"><label for="g2">增肌</label></div>
+            <div class="chip"><input type="radio" name="goal" id="g3" value="體態雕塑"><label for="g3">體態雕塑</label></div>
+            <div class="chip"><input type="radio" name="goal" id="g4" value="改善痠痛/姿勢"><label for="g4">改善痠痛/姿勢</label></div>
+          </div>
+          <div class="error" data-error></div>
+        </div>
+      </section>
+
+      <!-- Q2：時間與頻率 -->
+      <section class="q" data-required="true">
+        <div class="field">
+          <label>每週可安排的運動次數？</label>
+          <select name="weekly_times" required>
+            <option value="">請選擇</option>
+            <option>1 次</option><option>2 次</option><option>3 次</option>
+            <option>4 次</option><option>5 次以上</option>
+          </select>
+          <div class="error" data-error></div>
+        </div>
+      </section>
+
+      <!-- Q3：身體狀況 -->
+      <section class="q" data-required="false">
+        <div class="field">
+          <label>是否有醫師診斷或需注意的身體狀況？（選填）</label>
+          <textarea name="health_note" placeholder="例如：下背痠痛、膝蓋舊傷…"></textarea>
+        </div>
+      </section>
+
+      <!-- Q4：上傳參考照片（選填） -->
+      <section class="q" data-required="false">
+        <div class="field">
+          <label>上傳參考照片（最多 3 張，支援 jpg/png，單張 ≤ 3MB）</label>
+          <input type="file" id="photos" accept="image/*" multiple />
+          <div class="previews" id="previews"></div>
+          <p class="hint">* 若之後要正式追蹤，我們會提供更標準的拍攝指引。</p>
+          <div class="error" data-error></div>
+        </div>
+      </section>
+
+      <!-- Q5：聯絡資訊 -->
+      <section class="q" data-required="true">
+        <div class="row">
+          <div class="field">
+            <label>姓名</label>
+            <input type="text" name="name" placeholder="王小明" required/>
+            <div class="error" data-error></div>
+          </div>
+          <div class="field">
+            <label>手機</label>
+            <input type="tel" name="phone" placeholder="09xxxxxxxx" required/>
+            <div class="error" data-error></div>
+          </div>
+        </div>
+        <div class="field">
+          <label>Email（選填）</label>
+          <input type="email" name="email" placeholder="you@email.com"/>
+        </div>
+      </section>
+
+      <!-- 完成頁 -->
+      <section class="q" data-required="false">
+        <p>確認送出後，我們會把結果建立成諮詢紀錄並通知教練/營養師與你聯繫。</p>
+        <ul id="checklist" class="hint"></ul>
+      </section>
+
+      <div class="actions">
+        <button class="ghost" id="prev" disabled>上一步</button>
+        <div style="display:flex;gap:8px">
+          <button class="ghost" id="saveDraft" type="button">暫存</button>
+          <button class="primary" id="next">下一步</button>
+          <button class="primary" id="submit" style="display:none">送出</button>
+        </div>
+      </div>
+
+      <p id="status" class="hint"></p>
+
+      <!-- 隱藏欄位：來自 LIFF -->
+      <input type="hidden" id="line_user_id"/>
+      <input type="hidden" id="line_display_name"/>
+      <input type="hidden" id="line_email"/>
+    </div>
+  </div>
+
+  <script>
+    const LIFF_ID = "2007947083-NmVXjgWZ";                // ← 換成你的
+    const WEBHOOK_URL = "https://hook.us2.make.com/rshs73yehvhin83lp4hhq6lu6jv9fysh"; // ← 換成 Make Webhook 或你的 API
+
+    // -------- LIFF 初始化 --------
+    (async function initLIFF(){
+      try{
+        await liff.init({ liffId: LIFF_ID });
+        if(!liff.isLoggedIn()){ liff.login(); return; }
+        const profile = await liff.getProfile();
+        const idToken = liff.getDecodedIDToken?.();
+
+        document.getElementById("hello").textContent =
+          `嗨 ${profile.displayName}，請花 1~2 分鐘完成諮詢。`;
+
+        document.getElementById("line_user_id").value = profile.userId;
+        document.getElementById("line_display_name").value = profile.displayName;
+        if (idToken?.email) document.getElementById("line_email").value = idToken.email;
+      }catch(e){
+        // 非 LIFF 環境也可測試
+        document.getElementById("hello").textContent =
+          "（非 LIFF 測試模式）請照常填寫，送出仍可成功。";
+        console.warn("LIFF init failed (testing out of LINE):", e);
+      }
+    })();
+
+    // -------- 表單邏輯：多步驟 --------
+    const $qs = Array.from(document.querySelectorAll(".q"));
+    const $bar = document.getElementById("bar");
+    const $prev = document.getElementById("prev");
+    const $next = document.getElementById("next");
+    const $submit = document.getElementById("submit");
+    const $status = document.getElementById("status");
+    const $checklist = document.getElementById("checklist");
+
+    let step = 0;
+    const LAST_STEP = $qs.length - 1;
+
+    function showStep(i){
+      $qs.forEach((el,idx)=>el.classList.toggle("active", idx===i));
+      $prev.disabled = i===0;
+      $next.style.display  = (i===LAST_STEP)? "none":"inline-block";
+      $submit.style.display= (i===LAST_STEP)? "inline-block":"none";
+      $bar.style.width = Math.round(((i+1)/$qs.length)*100) + "%";
+      $status.textContent = "";
+      if(i===LAST_STEP) summarize();
+    }
+
+    function summarize(){
+      const fd = collectData(false);
+      const items = [
+        ["目標", fd.goal || "—"],
+        ["頻率", fd.weekly_times || "—"],
+        ["身體狀況", fd.health_note || "—"],
+        ["姓名", fd.name || "—"],
+        ["手機", fd.phone || "—"],
+        ["Email", fd.email || "—"],
+        ["圖片張數", (fd._photoFiles?.length||0) + " 張"],
+      ];
+      $checklist.innerHTML = items.map(([k,v])=>`<li>${k}：${String(v).replace(/</g,"&lt;")}</li>`).join("");
+    }
+
+    function validate(i){
+      const q = $qs[i];
+      const required = q.dataset.required === "true";
+      const err = q.querySelector("[data-error]");
+      if(err) err.textContent = "";
+
+      if(!required) return true;
+
+      // 最簡驗證：看有無必填值
+      const radios = q.querySelectorAll("input[type=radio]");
+      if(radios.length){
+        const checked = q.querySelector("input[type=radio]:checked");
+        if(!checked){ if(err) err.textContent = "請選擇一項"; return false; }
+        return true;
+      }
+      const selects = q.querySelectorAll("select[required]");
+      for(const s of selects){ if(!s.value){ if(err) err.textContent = "請選擇"; return false; } }
+
+      const inputs = q.querySelectorAll("input[required], textarea[required]");
+      for(const i of inputs){ if(!i.value.trim()){ if(err) err.textContent = "此欄位為必填"; return false; } }
+
+      return true;
+    }
+
+    $prev.addEventListener("click",()=>{ if(step>0){ step--; showStep(step); }});
+    $next.addEventListener("click",()=>{
+      if(!validate(step)) return;
+      if(step < LAST_STEP){ step++; showStep(step); }
+    });
+
+    // -------- 暫存（localStorage）--------
+    const KEY="consult_draft_v1";
+    document.getElementById("saveDraft").addEventListener("click", ()=>{
+      const data = collectData(false);
+      localStorage.setItem(KEY, JSON.stringify(data));
+      $status.innerHTML = "已暫存至本機 ✅";
+    });
+    (function loadDraft(){
+      try{
+        const raw = localStorage.getItem(KEY);
+        if(!raw) return;
+        const data = JSON.parse(raw);
+        if(data.goal) document.querySelector(`input[name=goal][value="${data.goal}"]`)?.click();
+        if(data.weekly_times) document.querySelector("select[name=weekly_times]").value = data.weekly_times;
+        if(data.health_note) document.querySelector("textarea[name=health_note]").value = data.health_note;
+        if(data.name) document.querySelector("input[name=name]").value = data.name;
+        if(data.phone) document.querySelector("input[name=phone]").value = data.phone;
+        if(data.email) document.querySelector("input[name=email]").value = data.email;
+      }catch(e){}
+    })();
+
+    // -------- 圖片處理（預覽＋限制）--------
+    const MAX_FILES = 3, MAX_MB = 3;
+    const $photos = document.getElementById("photos");
+    const $previews = document.getElementById("previews");
+    $photos.addEventListener("change", ()=>{
+      $previews.innerHTML="";
+      const files = Array.from($photos.files||[]);
+      const limited = files.slice(0, MAX_FILES);
+      const overs = files.length - limited.length;
+      if(overs>0) $status.textContent = `只會保留前 ${MAX_FILES} 張。`;
+
+      for(const f of limited){
+        if(f.size > MAX_MB*1024*1024){
+          $status.textContent = `有圖片超過 ${MAX_MB}MB，請壓縮後再試。`;
+          continue;
+        }
+        const url = URL.createObjectURL(f);
+        const img = new Image(); img.src = url;
+        $previews.appendChild(img);
+      }
+    });
+
+    // -------- 收集資料 --------
+    function collectData(withFiles=true){
+      const fd = {};
+      const checked = document.querySelector("input[name=goal]:checked");
+      fd.goal = checked?.value || "";
+      fd.weekly_times = document.querySelector("select[name=weekly_times]")?.value || "";
+      fd.health_note = document.querySelector("textarea[name=health_note]")?.value || "";
+      fd.name = document.querySelector("input[name=name]")?.value || "";
+      fd.phone = document.querySelector("input[name=phone]")?.value || "";
+      fd.email = document.querySelector("input[name=email]")?.value || "";
+
+      fd.line_user_id = document.getElementById("line_user_id").value || "";
+      fd.line_display_name = document.getElementById("line_display_name").value || "";
+      fd.line_email = document.getElementById("line_email").value || "";
+
+      if(withFiles){
+        fd._photoFiles = Array.from($photos.files||[]).slice(0,MAX_FILES)
+          .filter(f=>f.size<=MAX_MB*1024*1024);
+      }
+      return fd;
+    }
+
+    // -------- 送出（multipart/form-data）--------
+    document.getElementById("submit").addEventListener("click", async ()=>{
+      if(!validate(step)) return;
+
+      const data = collectData(true);
+      const form = new FormData();
+      for(const [k,v] of Object.entries(data)){
+        if(k==="_photoFiles") continue;
+        form.append(k, v ?? "");
+      }
+      (data._photoFiles||[]).forEach((f,idx)=>form.append(`photo_${idx+1}`, f, f.name));
+
+      $status.textContent = "傳送中…";
+      try{
+        const res = await fetch(WEBHOOK_URL, { method:"POST", body: form });
+        if(!res.ok) throw new Error(await res.text().catch(()=>res.statusText));
+        localStorage.removeItem(KEY);
+        $status.innerHTML = "<span class='ok'>已送出！感謝你的填寫，我們將盡快與你聯繫。</span>";
+        // 若在聊天內，可選擇回傳訊息
+        if(liff?.isInClient?.()){
+          try{
+            await liff.sendMessages([{ type:"text", text:"我已完成諮詢單 🙌" }]);
+          }catch(_){}
+        }
+      }catch(e){
+        console.error(e);
+        $status.innerHTML = `<span class='error'>送出失敗：${e.message}</span>`;
+      }
+    });
+
+    // 起始
+    showStep(step);
+  </script>
+</body>
+</html>
